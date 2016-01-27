@@ -1,10 +1,10 @@
-Generic Binary File Extractor Library
+#Generic Binary File Extractor Library
 =====================================
-#Scope
+##Scope
 ------
 设计这个库用于处理从二进制文件中按照指定格式解析数据内容的过程。
 
-#Target
+##Target
 -------
 
 ======================================================
@@ -18,5 +18,6 @@ Generic Binary File Extractor Library
     * LRU
     * MRU
     * FIFO
+* 单元测试（Googletest）
 
 =====================================================

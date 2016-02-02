@@ -11,7 +11,17 @@
 
 # include "common.h"
 
-typedef unsigned int SAL_INT;
+# define LINUX_FILE_BACKEND
+
+# ifdef LINUX_FILE_BACKEND
+#   include <fcntl.h>
+#   include <unistd.h>
+#   include <sys/uio.h>
+#   include <sys/types.h>
+#   include <sys/stat.h>
+# endif
+
+
 
 # endif
 

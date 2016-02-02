@@ -51,13 +51,6 @@ namespace IO{
     class istream : public io_base
     {
         public:
-
-            istream()
-                : mSize( 0 )
-                  ,mOffset( 0 )
-            {
-            }
-
             virtual streampos tellg()
             {
                 return mOffset;

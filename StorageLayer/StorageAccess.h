@@ -9,7 +9,7 @@
 # ifndef STORAGEACCESS_H
 # define STORAGEACCESS_H
 
-# include "common.h"
+#include "SAL_config.h"
 
 # include "StorageDescriptor.h"
 
@@ -54,10 +54,10 @@ void            SAL_Close   ( STORAGE_HANDLE  the_storage_handle );
  * @Param p_read_buffer : buffer to store data from storage
  * @Param buf_sz_B : total bytes require
  *
- * @return total bytes actually read
+ * @return total bytes actually read, -1 stand for error, 0 means eof
  */
 /* ------------------------------------------------------------*/
-unsigned int    SAL_Read    ( STORAGE_HANDLE the_storage, unsigned int r_offset, void* p_read_buffer, unsigned int buf_sz_B );
+int    SAL_Read    ( STORAGE_HANDLE the_storage, unsigned int r_offset, void* p_read_buffer, unsigned int buf_sz_B );
 
 /* ------------------------------------------------------------*/
 /**
@@ -68,10 +68,10 @@ unsigned int    SAL_Read    ( STORAGE_HANDLE the_storage, unsigned int r_offset,
  * @Param p_write_buffer : buffer to write out
  * @Param buf_sz_B : total bytes want to write out
  *
- * @return total bytes actually write out
+ * @return total bytes actually write out, -1 stand for error
  */
 /* ------------------------------------------------------------*/
-unsigned int    SAL_Write   ( STORAGE_HANDLE the_storage, unsigned int w_offset, void* p_write_buffer, unsigned int buf_sz_B );
+int    SAL_Write   ( STORAGE_HANDLE the_storage, unsigned int w_offset, void* p_write_buffer, unsigned int buf_sz_B );
 
 /* ------------------------------------------------------------*/
 /**

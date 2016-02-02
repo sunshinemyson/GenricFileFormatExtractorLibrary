@@ -10,15 +10,15 @@
 # define STORAGE_DESCRIPTOR_H
 
 typedef enum{
-    NAND_TYPE;
-    FILE_TYPE;
+    NAND_TYPE,
+    FILE_TYPE,
 
     TYPE_CNT
 } BACKEND_TYPE;
 
 typedef struct _Storage_Desc
 {
-    BACKEND_TYPE    backend;
+    BACKEND_TYPE    backend_type;
 
     union
     {
@@ -34,7 +34,7 @@ typedef struct _Storage_Desc
             // for Linux Platform
             const char* pFileName;                  //!< the file name with path
         } file;
-    }backend_type;
+    }backend_info;
 
 }Storage_Desc, *Ptr_Storage_Desc;
 
@@ -46,7 +46,7 @@ typedef struct _Storage{
     Storage_Desc        storage_desc;
 }Storage;
 
-extern const Storage[] SystemStorageTable;
+extern Storage SystemStorageTable[];
 /*
 {
     { "Nand_ImageBinary", { NAND_TYPE, { 0x00000000U, 4*1024*2014U } } }

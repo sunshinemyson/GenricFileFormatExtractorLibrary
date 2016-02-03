@@ -52,6 +52,8 @@ TEST( StorageAbstractLayer, read_write )
     SAL_Close( &storage_ptr );
     SAL_Open( "GoogleTest.bin" ,&storage_ptr );
 
+    EXPECT_EQ( buf_sz, SAL_GetSize( &storage_ptr ) );
+
     rslt_sz = SAL_Read( &storage_ptr, 0, (void*)p_read_buf, buf_sz );
     EXPECT_EQ( buf_sz, rslt_sz );
 
@@ -89,8 +91,17 @@ TEST( StorageAbstractLayer, read_write )
 
     EXPECT_TRUE( memcmp( p_write_buf, p_read_buf, buf_sz ) == 0 ) << "content not equal to just wirted";
 
+    EXPECT_EQ( buf_sz, SAL_GetSize( &storage_ptr ) );
     rslt_sz = SAL_Write( &storage_ptr, buf_sz, p_write_buf, buf_sz );
     EXPECT_EQ( buf_sz, rslt_sz );
+
+    EXPECT_EQ( buf_sz*2, SAL_GetSize( &storage_ptr ) );
+    rslt_sz = SAL_Read( &storage_ptr, 2*buf_sz - 1 , p_read_buf, 2 );
+    EXPECT_EQ( 1, rslt_sz );
+    EXPECT_EQ( 0xFF - (unsigned char)(1023%0xFFU), p_read_buf[0] );
+    rslt_sz = SAL_Read( &storage_ptr, 2*buf_sz, p_read_buf, buf_sz );
+    EXPECT_EQ( 0, rslt_sz );
+
 
     rslt_sz = SAL_Write( &storage_ptr, buf_sz, p_write_buf, 0 );
     EXPECT_EQ( 0, rslt_sz );

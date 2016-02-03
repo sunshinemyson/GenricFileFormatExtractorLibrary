@@ -59,8 +59,11 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 PROJECT_ROOT=.
 
-INCLUDES = $(PROJECT_ROOT)/Common
-LIB_HEADERS = $(PROJECT_ROOT)/Common/common.h 
+INCLUDES =  $(PROJECT_ROOT)/Common \
+           -I$(PROJECT_ROOT)/StorageLayer \
+           -I$(PROJECT_ROOT)/IO_Stream
+
+LIB_HEADERS = $(PROJECT_ROOT)/Common/common.h
 
 #
 # storage unit test
@@ -73,6 +76,20 @@ UnitTest_StorageAccess.o: $(STORAGE_DIR)/UnitTest_StorageAccess.cpp\
                      $(STORAGE_DIR)/StorageAccess.h $(GTEST_HEADERS) $(LIB_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(STORAGE_DIR)/UnitTest_StorageAccess.cpp
 
-unittest : StorageAccess.o UnitTest_StorageAccess.o gtest_main.a
+IO_STREAM = ./IO_Stream
+io_base.o : $(IO_STREAM)/io_base.cpp \
+                     $(IO_STREAM)/io_base.hpp\
+                     $(STORAGE_DIR)/StorageAccess.h\
+                     $(STORAGE_DIR)/StorageDescriptor.h\
+                     $(GTEST_HEADERS) $(LIB_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(IO_STREAM)/io_base.cpp
+
+UnitTest_io_base.o : $(IO_STREAM)/UnitTest_io_base.cpp \
+                     $(IO_STREAM)/io_base.hpp \
+                     io_base.o \
+                     $(GTEST_HEADERS) $(LIB_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(IO_STREAM)/UnitTest_io_base.cpp
+
+unittest : StorageAccess.o UnitTest_StorageAccess.o gtest_main.a UnitTest_io_base.o io_base.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 

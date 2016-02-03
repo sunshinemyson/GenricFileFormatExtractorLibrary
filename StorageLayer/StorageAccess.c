@@ -113,6 +113,16 @@ static int file_write( const char* fname, unsigned int w_offset, void* p_write_b
 
     return write_size;
 }
+static int file_get_size( const char* fname )
+{
+    struct stat fstat ;
+
+    memset( &fstat, 0, sizeof(struct stat) );
+
+    stat( fname, &fstat );
+
+    return fstat.st_size;
+}
 //
 
 void SAL_Open( const char* the_storage_id, STORAGE_HANDLE the_storage_handle )
@@ -161,6 +171,9 @@ int SAL_Read( STORAGE_HANDLE aHandle, unsigned int r_offset, void* p_read_buffer
     read_bytes = 0U;
     assert( IS_HANDLE_VALID( aHandle ) );
     ptr_storage = *aHandle;
+
+    // debug code
+    // printf("%s( .., offset = %d, p_read_buffer->0x%x, buf_sz = %d)\n" , __FUNCTION__,  r_offset, (p_read_buffer), buf_sz_B );
 
     if( NULL == p_read_buffer )
     {
@@ -211,5 +224,29 @@ int SAL_Write( STORAGE_HANDLE aHandle, unsigned int w_offset, void* p_write_buff
     }
 
      return write_bytes;
+}
+
+int SAL_GetSize( STORAGE_HANDLE aHandle )
+{
+     int sz;
+    Ptr_Storage_Desc    ptr_storage;
+
+    sz = -1;
+    assert( IS_HANDLE_VALID( aHandle ) );
+    ptr_storage = *aHandle;
+
+     switch( ptr_storage->backend_type )
+    {
+        case NAND_TYPE:
+            sz = ptr_storage->backend_info.nand.size_in_bytes;
+            break;
+        case FILE_TYPE:
+            sz = file_get_size( ptr_storage->backend_info.file.pFileName );
+            break;
+        default:
+            break;
+    }
+
+    return sz;
 }
 

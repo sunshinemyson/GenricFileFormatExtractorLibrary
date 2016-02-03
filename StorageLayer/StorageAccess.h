@@ -75,6 +75,17 @@ int    SAL_Write   ( STORAGE_HANDLE the_storage, unsigned int w_offset, void* p_
 
 /* ------------------------------------------------------------*/
 /**
+ * @Brief get total size of current storage
+ *
+ * @Param the_storage handle
+ *
+ * @return size in bytes, -1 stand for no limited size
+ */
+/* ------------------------------------------------------------*/
+int     SAL_GetSize( STORAGE_HANDLE the_storage );
+
+/* ------------------------------------------------------------*/
+/**
  * @Brief Get sal state after last operation executed
  *      the status my be mess under multi task
  *

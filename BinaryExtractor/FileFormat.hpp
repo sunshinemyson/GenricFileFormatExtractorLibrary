@@ -6,61 +6,94 @@
  * @date 2016-01-27
  */
 
-namespace IO{
-    class BaseIO;
-    class istream;
-    class ostream;
-    class fistream;
-    class foutstream;
-}
+#include <deque>
+#include <stdio.h>
 
-using namespace IO::istream;
-using namespace IO::ostream;
+#include "io_base.hpp"
+#include "common.h"
 
 namespace BinExtract{
 
     class iFileSection {
+        public:
 
-        /* ------------------------------------------------------------*/
-        /**
-         * @Brief read data from input stream
-         *
-         * @Param the input stream which should be promised point to right position
-         *
-         * @return total bytes read from the input stream; return -1 stand for EOF
-         */
-        /* ------------------------------------------------------------*/
-        virtual int read( istream* ) = 0;
+            /* ------------------------------------------------------------*/
+            /**
+             * @Brief read data from input stream
+             *
+             * @Param the input stream which should be promised point to right position
+             *
+             * @return total bytes read from the input stream; return -1 stand for EOF
+             */
+            /* ------------------------------------------------------------*/
+            virtual int read( IO::istream* ) = 0;
 
-        /* ------------------------------------------------------------*/
-        /**
-         * @Brief write data to output stream
-         *
-         * @Param the output stream should be promised in right position
-         *
-         * @return total bytes writeout by output stream; return -1 stand for EOF
-         */
-        /* ------------------------------------------------------------*/
-        virtual int write( ostream* ) = 0;
+            /* ------------------------------------------------------------*/
+            /**
+             * @Brief write data to output stream
+             *
+             * @Param the output stream should be promised in right position
+             *
+             * @return total bytes writeout by output stream; return -1 stand for EOF
+             */
+            /* ------------------------------------------------------------*/
+            virtual int write( IO::ostream* ) = 0;
 
-        /* ------------------------------------------------------------*/
-        /**
-         * @Brief get current section size in bytes
-         *
-         * @return section size in bytes
-         */
-        /* ------------------------------------------------------------*/
-        virtual int getSize() = 0;
-    }
+            /* ------------------------------------------------------------*/
+            /**
+             * @Brief get current section size in bytes
+             *
+             * @return section size in bytes
+             */
+            /* ------------------------------------------------------------*/
+            virtual int getSize() = 0;
+    };
 
     template< typename T >
     class FileSection : public iFileSection {
         public:
-            FileSection();
+            typedef T value_type;
 
-            virtual int read( istream* input_stream );
+            explicit FileSection( const T& aData )
+            {
+                mData = aData;
+            }
 
-            virtual int write( ostream* output_stream );
+            FileSection()
+            {
+                memset( &mData, 0, sizeof(T) );
+            }
+
+            virtual ~FileSection(){}
+
+            virtual int read( IO::istream* input_stream )
+            {
+                assert( NULL != input_stream );
+
+                int readBytesCnt = 0;
+
+                // TODO: stream doesn't feedback last read()'s result
+                readBytesCnt = sizeof(T);
+
+                input_stream->read( (char*)&mData, sizeof(mData) );
+
+                return readBytesCnt;
+            }
+
+            virtual int write( IO::ostream* output_stream )
+            {
+                //printf("DEBUG : write to oupput_stream\n");
+                assert( NULL != output_stream );
+
+                int writeBytesCnt = 0;
+
+                // TODO: stream doesn't feedback last write()'s result
+                writeBytesCnt = sizeof(T);
+
+                output_stream->write( (char*)&mData, sizeof(mData) );
+
+                return writeBytesCnt;
+            }
 
             virtual int getSize()
             {
@@ -76,17 +109,26 @@ namespace BinExtract{
             typedef std::deque< iFileSection* >     SEC_LIST;
             typedef SEC_LIST::iterator              SEC_ITERATOR;
 
+            AbstractFile();
+
+            explicit AbstractFile( IO::ifstream * );
+
+            explicit AbstractFile( IO::ofstream * );
+
+            virtual ~AbstractFile();
+
             /* ------------------------------------------------------------*/
             /**
              * @Brief "<<" oprator to push a new filesection to the Abstract file
              *          you can geti your content via aFsection after AbstractFile execture
+             *          after read/write operation done these sections will removed from internal list
              *
-             * @Param aFsection : the section to extract or write out
+             * @Param aFsection : the section to extract or write out, never pass NULL
              *
              * @return *this
              */
             /* ------------------------------------------------------------*/
-            AbstractFile& operator<<( const iFileSection* aFsection );
+            AbstractFile& operator<<( iFileSection* aFsection );
 
             typedef enum{
                  SEEK_F_START,
@@ -98,16 +140,29 @@ namespace BinExtract{
 
             /* ------------------------------------------------------------*/
             /**
-             * @Brief seek file with given offset
+             * @Brief seek input stream with given offset
              *
              * @Param aOffset : seek value by bytes, negative value means seek backward or seek forward
-             * @Param aOpCode : Seek mode, default is seek from curren pos
+             * @Param aOpCode : Seek mode, default is seek from current pos
              *
              * @return the original file position, if you pass 0 for aOffset, you can get
              *      current pos without touch anything related the stream
              */
             /* ------------------------------------------------------------*/
-            int seekTo( int aOffset, SEEK_OP aOpCode = SEEK_F_CUR );
+            int rseekTo( int aOffset, SEEK_OP aSeekOp = SEEK_F_CUR );
+
+            /* ------------------------------------------------------------*/
+            /**
+             * @Brief seek output stream with given offset
+             *
+             * @Param aOffset : seek value by bytes, negative value means seek backward  or seek forward
+             * @Param aSeekOp : seek mode, default is seek from current pos
+             *
+             * @return the original stream position, if you pass 0 to aOffset, you'll get
+             *  current pos without touch anything within stream
+             */
+            /* ------------------------------------------------------------*/
+            int wseekTo( int aOffset, SEEK_OP aSeekOp = SEEK_F_CUR );
 
             /* ------------------------------------------------------------*/
             /**
@@ -121,10 +176,10 @@ namespace BinExtract{
              *      NULL : if client just want to read new section content, they shouldn't pass a new input stream
              *      None-NULL : the new input_stream
              *
-             * @return totoal size read in by bytes
+             * @return totoal size read in by bytes, return -1 if error detected
              */
             /* ------------------------------------------------------------*/
-            virtual int read( istream* input_stream = NULL );
+            virtual int read( IO::istream* input_stream = NULL );
 
             /* ------------------------------------------------------------*/
             /**
@@ -138,17 +193,20 @@ namespace BinExtract{
              *      NULL : if client just want to write new section content, they should'nt pass a new output stream
              *      None-Null : the new output stream
              *
-             * @return total bytes write out
+             * @return total bytes write out, return -1 if error detected
              */
             /* ------------------------------------------------------------*/
-            virtual int write( ostream* output_stream = NULL );
+            virtual int write( IO::ostream* output_stream = NULL );
 
-        private:
-            int             mCurPos ;               //!< the default read/write offset in current file
+        protected:
+            void            init();
+
+            int             mCurReadPos ;               //!< the default read offset in current file
+            int             mCurWritePos;               //!< the default write offset int current file
             int             mFileSize;              //!< the file size
 
-            istream         *mInputStream;          //!< the input stream used in read(); released by me
-            ostream         *mOutputStream;         //!< the output stream used in write(); released by me
+            IO::istream         *mInputStream;          //!< the input stream used in read(); released by me
+            IO::ostream         *mOutputStream;         //!< the output stream used in write(); released by me
 
             SEC_LIST        mSectors;               //!< the sectors pointers which used while reading/writing
     };

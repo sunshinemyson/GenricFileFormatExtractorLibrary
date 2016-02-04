@@ -17,6 +17,7 @@ namespace IO
         : istream()
     {
         assert( aFileName );
+        mStorage = NULL;
 
         SAL_Open( aFileName, &mStorage );
         mSize = SAL_GetSize( &mStorage );
@@ -52,9 +53,11 @@ namespace IO
     ofstream::ofstream( const char* aFileName, io_base::openmode mode )
     {
         assert( NULL != aFileName );
+        mStorage = NULL;
 
         SAL_Open( aFileName, &mStorage );
         mSize = SAL_GetSize( &mStorage );
+        assert( NULL != mStorage );
     }
 
     ofstream::~ofstream()

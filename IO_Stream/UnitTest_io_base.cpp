@@ -6,7 +6,7 @@ TEST( IO_Stream, ofstream )
 {
     IO::ofstream    *ofs = new IO::ofstream( "GoogleTest.bin", IO::io_base::out );
 
-    EXPECT_EQ( 0, ofs->tellg() );
+    EXPECT_EQ( 0, ofs->tellp() );
     EXPECT_NE( true, ofs->eof() );
 
     char byte = 'a';
@@ -17,30 +17,30 @@ TEST( IO_Stream, ofstream )
         fsz++;
     }
 
-    EXPECT_EQ( fsz, ofs->tellg() );
+    EXPECT_EQ( fsz, ofs->tellp() );
 
     ofs->write( &byte, 1 );
-    EXPECT_EQ( fsz, ofs->tellg() );
+    EXPECT_EQ( fsz, ofs->tellp() );
 
-    ofs->seekg(0, IO::io_base::beg);
-    EXPECT_EQ( 0, ofs->tellg() );
+    ofs->seekp(0, IO::io_base::beg);
+    EXPECT_EQ( 0, ofs->tellp() );
 
-    ofs->seekg(fsz/2, IO::io_base::cur);
-    EXPECT_EQ( fsz/2, ofs->tellg() );
+    ofs->seekp(fsz/2, IO::io_base::cur);
+    EXPECT_EQ( fsz/2, ofs->tellp() );
 
-    ofs->seekg( -1, IO::io_base::cur );
-    EXPECT_EQ( fsz/2-1, ofs->tellg() );
+    ofs->seekp( -1, IO::io_base::cur );
+    EXPECT_EQ( fsz/2-1, ofs->tellp() );
 
-    ofs->seekg( fsz, IO::io_base::cur );
+    ofs->seekp( fsz, IO::io_base::cur );
     EXPECT_TRUE( ofs->eof() );
 
     ofs->write( &byte, 1 );
-    EXPECT_EQ( fsz, ofs->tellg() );
+    EXPECT_EQ( fsz, ofs->tellp() );
 
     delete ofs;
 
     ofs = new IO::ofstream( "GoogleTest.bin", IO::io_base::out );
-    EXPECT_EQ(0,ofs->tellg());
+    EXPECT_EQ(0,ofs->tellp());
 
     int v = 0;
     while( !ofs->eof() )

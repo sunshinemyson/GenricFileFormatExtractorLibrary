@@ -9,14 +9,14 @@
 #include "StorageDescriptor.h"
 #include "StorageAccess.h"
 
-#include "string.h"
-#include "assert.h"
+#include <string.h>
 #include <stdio.h>
 #include <errno.h>
 
 Storage     SystemStorageTable[] = {
     { "Nand_ImageBinary", { NAND_TYPE, { { 0x00000000U  , 4*1024*2014U  } } } }
    ,{ "GoogleTest.bin", { FILE_TYPE, { { 0U           , 0U            } } } }
+   ,{ "img.bin", { FILE_TYPE, { { 0U, 0U }}}}
 };
 
 static const int  SystemStorageAmount = cnt_of_array( SystemStorageTable );
@@ -26,6 +26,7 @@ static const void* SystemStorageEnd   = (void*)((char*)SystemStorageTable + size
 #define IS_HANDLE_VALID( _S_HNDL ) ( (_S_HNDL) && ( SystemStorageBegin <= *(_S_HNDL) && *(_S_HNDL) < SystemStorageEnd ) )
 
 //          TODO local API for backend
+static int file_get_size( const char* fname );
 static int file_read ( const char* fname, unsigned int r_offset, void* p_read_buffer, unsigned int buf_sz_B )
 {
     int    read_size;
@@ -249,4 +250,3 @@ int SAL_GetSize( STORAGE_HANDLE aHandle )
 
     return sz;
 }
-

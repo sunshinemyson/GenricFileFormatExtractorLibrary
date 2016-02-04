@@ -61,7 +61,8 @@ PROJECT_ROOT=.
 
 INCLUDES =  $(PROJECT_ROOT)/Common \
            -I$(PROJECT_ROOT)/StorageLayer \
-           -I$(PROJECT_ROOT)/IO_Stream
+           -I$(PROJECT_ROOT)/IO_Stream \
+		   -I$(PROJECT_ROOT)/BinaryExtractor
 
 LIB_HEADERS = $(PROJECT_ROOT)/Common/common.h
 
@@ -90,6 +91,39 @@ UnitTest_io_base.o : $(IO_STREAM)/UnitTest_io_base.cpp \
                      $(GTEST_HEADERS) $(LIB_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(IO_STREAM)/UnitTest_io_base.cpp
 
-unittest : StorageAccess.o UnitTest_StorageAccess.o gtest_main.a UnitTest_io_base.o io_base.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+Bin_Extractor = ./BinaryExtractor
+FileFormat.o : $(Bin_Extractor)/FileFormat.cpp \
+                     $(Bin_Extractor)/FileFormat.hpp \
+                     $(IO_STREAM)/io_base.hpp \
+                     $(LIB_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(Bin_Extractor)/FileFormat.cpp
 
+UnitTest_FileFormat.o : FileFormat.o \
+                        $(Bin_Extractor)/UnitTest_FileFormat.cpp \
+                        $(Bin_Extractor)/FileFormat.hpp \
+                        $(GTEST_HEADERS) $(LIB_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(Bin_Extractor)/UnitTest_FileFormat.cpp
+
+ImageBinary.o : $(Bin_Extractor)/ImageBinary.cpp \
+                $(Bin_Extractor)/ImageBinary.hpp \
+							  $(Bin_Extractor)/FileFormat.hpp  \
+								$(LIB_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(Bin_Extractor)/ImageBinary.cpp
+
+UnitTest_ImageBinary.o : $(Bin_Extractor)/UnitTest_ImageBinary.cpp \
+                         $(Bin_Extractor)/ImageBinary.hpp \
+												 $(GTEST_HEADERS) $(LIB_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(INCLUDES) -c $(Bin_Extractor)/UnitTest_ImageBinary.cpp
+
+unittest_objs = StorageAccess.o \
+UnitTest_StorageAccess.o \
+UnitTest_io_base.o \
+io_base.o \
+FileFormat.o \
+UnitTest_FileFormat.o\
+ImageBinary.o\
+UnitTest_ImageBinary.o\
+gtest_main.a
+
+unittest : $(unittest_objs)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

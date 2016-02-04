@@ -20,5 +20,16 @@
 #   define cnt_of_array( _array ) ( sizeof(_array)/sizeof(_array[0]) )
 # endif
 
+# ifndef DBG_ASSERT
+#   include <assert.h>
 # endif
 
+# ifndef __UW__
+  typedef unsigned int UW;
+# endif
+
+# ifndef DBG
+#   include <stdio.h>
+# endif
+
+# endif

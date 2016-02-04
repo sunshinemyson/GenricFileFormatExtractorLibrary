@@ -6,11 +6,13 @@
  * @date 2016-02-01
  */
 
-#ifndef IO_BASE_HPP
-#define IO_BASE_HPP
+# ifndef IO_BASE_HPP
+# define IO_BASE_HPP
 
-#include "StorageDescriptor.h"
-#include <assert.h>
+# include "StorageDescriptor.h"
+# ifndef COMMON_H
+# include "common.h"
+# endif
 
 /* ------------------------------------------------------------*/
 /**
@@ -50,11 +52,33 @@ namespace IO{
                 return (mOffset >= mSize);
             }
 
+       protected:
+            streamsize      mSize;          //!< the input stream's size
+            streampos       mOffset;        //!< the current input offset
+    };
+
+    class istream : public io_base
+    {
+        public:
+            virtual ~istream() {};
+
+            virtual istream& read( char* s, streamsize n ) = 0;
+
             virtual streampos tellg()
             {
                 return mOffset;
             }
 
+            /* ------------------------------------------------------------*/
+            /**
+             * @Brief change read position
+             *
+             * @Param aOffset : no matter this value is, i will get_offset in valid scope
+             * @Param way : where to start
+             *
+             * @return updated instance
+             */
+            /* ------------------------------------------------------------*/
             virtual io_base& seekg( streamoff aOffset, io_base::seek_dir way )
             {
                 switch ( way )
@@ -85,21 +109,60 @@ namespace IO{
 
                 return *this;
             }
-        protected:
-            streamsize      mSize;          //!< the input stream's size
-            streampos       mOffset;        //!< the current input offset
-    };
 
-    class istream : public io_base
-    {
-        public:
-            virtual istream& read( char* s, streamsize n ) = 0;
     };
 
     class ostream : public io_base
     {
         public:
+            virtual ~ostream(){} ;
             virtual ostream& write( char* s, streamsize n ) = 0;
+
+            virtual streampos tellp()
+            {
+                return mOffset;
+            }
+
+            /* ------------------------------------------------------------*/
+            /**
+             * @Brief set put stream position
+             *
+             * @Param aOffset : no matter value is, i will keep it in valid scope
+             * @Param way : where to start
+             *
+             * @return updated this instance
+             */
+            /* ------------------------------------------------------------*/
+            virtual io_base& seekp( streamoff aOffset, io_base::seek_dir way )
+            {
+                switch ( way )
+                {
+                    case io_base::beg:
+                        mOffset = static_cast<streampos>( aOffset );
+                        break;
+                    case io_base::cur:
+                        mOffset += static_cast<streampos>( aOffset );
+                        break;
+                    case io_base::end:
+                        mOffset = mSize - 1 + static_cast<streampos>( aOffset );
+                        break;
+                    default:
+                        assert( false );
+                        break;
+                }
+
+                if( mOffset < 0 )
+                {
+                     mOffset = 0;
+                }
+
+                if( mOffset > mSize )
+                {
+                     mOffset = mSize;
+                }
+
+                return *this;
+            }
     };
 
     class ifstream : public istream
@@ -130,6 +193,8 @@ namespace IO{
             explicit ofstream( const char* aFileName, io_base::openmode mode = io_base::out );
             virtual ~ofstream();
 
+
+
             /* ------------------------------------------------------------*/
             /**
              * @Brief write content of buf to file
@@ -151,5 +216,4 @@ namespace IO{
     };
 }
 
-#endif
-
+# endif
